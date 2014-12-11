@@ -1,0 +1,26 @@
+TODO:
+
+Recording and playing back audio
+
+
+Recording
+	User hits the record key and has up to 4 seconds to record a sound through the mic. If user hits the record key again the recording is set to end. 
+
+	After recording the plane appears and begins moving around the sphere at a specific elevation and specific speed. 
+
+	The user can move the plane up and down
+		maybe speed up and slow down
+	delete the plane 
+		maybe record a second plane
+
+Steps
+	Code HRIR
+		load all files into memory
+	Record audio
+		Create windows and take stft of each window
+	Convolve
+		Convolve and add each window.
+		Interpolate between 3 nearest points
+		fft -> pointwise multiply -> ifft
+	
+	Reconstruct signal and playback.
