@@ -9,7 +9,7 @@ LIBS=-framework CoreAudio -framework CoreMIDI -framework CoreFoundation \
 SNDFLAGS=`pkg-config --cflags sndfile` -c -std=c++11
 SNDLIBFLAGS=`pkg-config --libs sndfile`
 
-OBJS=   RtAudio.o HRTFDatabase.o Recorder.o chuck_fft.o Plane.o
+OBJS=   RtAudio.o HRTFDatabase.o Recorder.o chuck_fft.o AudioEngine.o Plane.o
 
 Plane: $(OBJS)
 	$(CXX) -o Plane $(OBJS) $(LIBS) $(SNDLIBFLAGS)
@@ -25,6 +25,9 @@ Recorder.o: Recorder.cpp Recorder.h chuck_fft.h
 
 chuck_fft.o: chuck_fft.h chuck_fft.c
 	$(CXX) $(FLAGS) chuck_fft.c
+
+AudioEngine.o: AudioEngine.cpp AudioEngine.h HRTFDatabase.h RtAudio.h Recorder.h
+	$(CXX) $(FLAGS) AudioEngine.cpp
 
 Plane.o: Plane.cpp
 	$(CXX) $(FLAGS) Plane.cpp

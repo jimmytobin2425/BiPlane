@@ -17,20 +17,14 @@ struct Recording
 class Recorder {
 
 public:
-	Recorder();
-	Recording record();
-	SAMPLE** getRecording();
-	int getStatus();
-	void cleanup();
+	Recorder(unique_ptr<RtAudio>& audio);
+	Recording record(unique_ptr<RtAudio>& audio);
+	void cleanup(unique_ptr<RtAudio>& audio);
 
 private:
-	RtAudio audio;
-	void setStatus(int update);
 	void calculateSpectrum(Recording& rec);
 	unique_ptr<vector<SAMPLE> >raw_recording;
 	unique_ptr<vector<SAMPLE> >buffer;
-	unique_ptr<vector<complex*> >spectrum_frames;
-	int status;
 };
 
 #endif

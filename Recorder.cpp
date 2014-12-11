@@ -28,8 +28,8 @@ int callme( void * outputBuffer, void * inputBuffer, unsigned int numFrames,
     return 0;
 }
 
-Recorder::Recorder(){
-	setStatus(0);
+Recorder::Recorder(unique_ptr<RtAudio>& audio){
+
 	raw_recording.reset(new vector<SAMPLE>);
 
 	// Ge's code to get RtAudio to start up
@@ -41,19 +41,19 @@ Recorder::Recorder(){
     buffer->reserve(BUFFER_SIZE);
 
     // check for audio devices
-    if( audio.getDeviceCount() < 1 )
+    if( audio->getDeviceCount() < 1 )
     {
         // nopes
         cout << "no audio devices found!" << endl;
         exit( 1 );
     }
-    audio.showWarnings( true );
+    audio->showWarnings( true );
 
     RtAudio::StreamParameters iParams, oParams;
-    iParams.deviceId = audio.getDefaultInputDevice();
+    iParams.deviceId = audio->getDefaultInputDevice();
     iParams.nChannels = MY_IN_CHANNELS;
     iParams.firstChannel = 0;
-    oParams.deviceId = audio.getDefaultOutputDevice();
+    oParams.deviceId = audio->getDefaultOutputDevice();
     oParams.nChannels = MY_OUT_CHANNELS;
     oParams.firstChannel = 0;
 
@@ -63,7 +63,7 @@ Recorder::Recorder(){
     // go for it
     try {
         // open a stream
-        audio.openStream( &oParams, &iParams, MY_FORMAT, MY_SRATE, &bufferFrames, &callme, (void *)raw_recording.get(), &options );
+        audio->openStream( &oParams, &iParams, MY_FORMAT, MY_SRATE, &bufferFrames, &callme, (void *)raw_recording.get(), &options );
     }
     catch( RtError& e )
     {
@@ -74,29 +74,27 @@ Recorder::Recorder(){
    
 }
 
-Recording Recorder::record(){
+Recording Recorder::record(unique_ptr<RtAudio>& audio){
 	int max_capacity = MY_SRATE * MY_RECORDING_LENGTH_S;
 	raw_recording->reserve(max_capacity);
 	 try {
         // start stream
-        audio.startStream();
+        audio->startStream();
         // wait for recording to fill up.
         while(raw_recording->size() < raw_recording->capacity()){}
         // stop the stream.
-        setStatus(1);
     }
     catch( RtError& e )
     {
         // print error message
         cout << e.getMessage() << endl;
-        setStatus(3);
-        if( audio.isStreamOpen() )
-        audio.stopStream();
+        if( audio->isStreamOpen() )
+        audio->stopStream();
     }
     Recording rec;
     calculateSpectrum(rec);
-	if( audio.isStreamOpen() )
-        audio.stopStream();
+	if( audio->isStreamOpen() )
+        audio->stopStream();
     return rec;
 }
 
@@ -117,22 +115,9 @@ void Recorder::calculateSpectrum(Recording& rec){
 	}
 }
 
-void Recorder::cleanup(){
-	if( audio.isStreamOpen() )
-        audio.closeStream();
-}
-
-// Returns status of recording
-// 0 : recording not started
-// 1 : recording in memory
-// 2 : spectral frames in memory
-// 3 : error
-int Recorder::getStatus(){
-	return status;
-}
-
-void Recorder::setStatus(int update){
-	status = update;
+void Recorder::cleanup(unique_ptr<RtAudio>& audio){
+	if( audio->isStreamOpen() )
+        audio->closeStream();
 }
 
 
